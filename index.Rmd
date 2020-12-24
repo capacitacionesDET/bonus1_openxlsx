@@ -1,0 +1,527 @@
+---
+title: "Capacitación en R"
+subtitle: "Sesión complementaria"  
+author: 
+date: '`r Sys.Date()`'
+output:
+  xaringan::moon_reader:
+    seal: false
+    #lib_dir: libs
+    css: xaringan-themer.css
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: False
+---
+
+class: center, middle
+
+.linea-superior[]
+.linea-inferior[]
+
+
+<img src="imagenes/logo_portada2.png" width="200" />
+
+
+## Capacitación en R
+
+## Exportar archivos desde R a Excel 
+
+### (material complementario)
+
+### Diciembre 2020
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = TRUE)
+knitr::opts_chunk$set(message = FALSE) 
+```
+
+```{r xaringan-themer, include=FALSE, warning=FALSE}
+library(xaringanthemer)
+```
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Exportar archivos desde R a Excel
+
+--
+<br/>
+
+.medium-par[Hay muchas formas de exportar tablas y bases de datos desde R a Excel.]
+<br/>
+<br/>
+
+--
+
+.medium-par[El proceso resulta fundamental cuando trabajamos en equipos y no todos manejan el lenguaje de R.]
+<br/>
+<br/>
+
+--
+
+.medium-par[El universo `tidyverse` no cuenta con paquetes para exportar datos a excel en formato `.xlsx`.]
+<br/>
+<br/>
+
+--
+
+.medium-par[La forma quizás más sencilla y difundida de hacerlo es con el paquete `writexl` (sintaxis sencilla y corta, pero limitada).]
+<br/>
+<br/>
+
+
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Exportación con `writexl`
+
+--
+
+.medium-par[En primer lugar creemos una base de datos ficticia:]
+
+--
+
+```{r}
+base1<-as.data.frame(cbind(
+  a=c(1:10),
+  b=c(1:10)
+))
+
+head(base1,4)
+```
+
+--
+
+.medium-par[Para exportar la base de datos solamente hay que cargar el paquete `writexl` y especificar dos argumentos en la función `write_xlsx`:]
+
+--
+
+```{r warning=FALSE}
+library(writexl)          
+write_xlsx(base1,          # objeto a exportar (data frame)
+  "output/nombre_archivo.xlsx")   # nombre de archivo a crear
+
+```
+
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Exportación con `writexl`
+
+--
+<br/>
+
+.medium-par[Por defecto, `write_xlsx` considerará en la exportación el nombre de las columnas y las pondrá centradas y en **negrito**.]
+
+
+--
+
+![](imagenes/base1.PNG)
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Exportación con `writexl`
+
+--
+
+.medium-par[¿Como evitarlo?]
+
+--
+
+Existen dos argumentos extra con los que se puede "jugar" en la función `write_xlsx`: col_names y format_headers.
+
+--
+
+Quitar nombres de columnas:
+
+```{r warning=FALSE}
+library(writexl)          
+write_xlsx(base1,              # objeto a exportar (data frame)
+  "output/nombre_archivo2.xlsx",  # nombre de archivo a crear
+  col_names = FALSE,            # Base sin nombres de columnas
+  ) 
+
+```
+
+--
+
+Dejar nombre de columnas pero quitarles el formato
+
+```{r warning=FALSE}
+library(writexl)          
+write_xlsx(base1,              # objeto a exportar (data frame)
+  "output/nombre_archivo3.xlsx",  # nombre de archivo a crear
+  col_names = TRUE,            # Base con nombres de columnas
+  format_headers = FALSE      # Nombres de columnas sin formato
+  ) 
+
+```
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Exportación con `writexl`
+
+--
+
+Una última posibilidad a revisar con `write_xlsx` tiene que ver con el exportar más de una base de datos en un mismo archivo (un archivo por pestaña).
+
+--
+
+Para esto, las distintas bases de datos a exportar deben agruparse en una lista (`list()`).
+
+--
+
+```{r}
+## Se crean dos nuevas bases de datos
+base2<-as.data.frame(cbind(c=c(1:10),d=c(1:10)))
+base3<-as.data.frame(cbind(e=c(1:10),f=c(1:10)))
+
+```
+
+--
+
+```{r warning=FALSE}
+library(writexl)          
+write_xlsx(list(base1,base2,base3), # Bases en una lista.
+  "output/nombre_archivo4.xlsx",  # nombre de archivo a crear
+  ) 
+```
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Límites de `writexl`
+
+--
+
+En base a los cuatro argumentos de `write_xlsx`, ¿cómo podemos crear un archivo excel como el siguiente?
+
+--
+
+**Extracto base auditoría IR-ICMO**
+![Extracto base auditoría IR-ICMO](imagenes/auditoriaIRICMO.PNG)
+
+--
+
+No se puede. Hay que recurrir a otras funciones, como `openxlsx`, que pemitirán:
+
++ Definir formato de celdas (color, color condicional, %, carácter, etc.)
++ Pegar más de una base de datos por pestañas
++ Inmovilizar paneles
++ Muchas cosas más. 
+
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# El paquete `openxlsx`
+
+--
+
+En su forma más simple el código resulta más complejo que el de `writexl`:
+
+```{r}
+library(openxlsx)
+
+wb <- createWorkbook()  ## Se crea libro de trabajo (wb)
+
+addWorksheet(wb,        ## Al objeto wb le damos una pestaña
+      sheetName = "pestaña1", 
+      gridLines = FALSE)
+
+writeData(wb = wb,        ## En el libro wb
+      sheet = "pestaña1", ## En su pestaña1
+      x = base1)          ## Cargamos el objeto base1
+
+saveWorkbook(wb = wb,     ## Exportamos el libro
+          file = "output/nombre_archivo5.xlsx", 
+          overwrite = TRUE)
+
+```
+
+--
+
+Más complejo, pero vale la pena para tener más control sobre los libros excel que crearemos a futuro. 
+
+--
+
+Lo más simple es copiar y pegar este código cuando quieran exportar, limitándose a cambiar los argumentos según sus objetos y direcciones de trabajo. 
+
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# El paquete `openxlsx`
+
+--
+
+.medium-par[Definir posición exacta de objetos en cada pestaña]
+
+Pendiente.
+
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# El paquete `openxlsx`
+
+--
+
+A continuación se revisan algunos comandos que se pueden agregar entre la creación del objeto wb (Work Book) y su exportación. Específicamente, después de crear pestañas en el libro de trabajo y cargarle los objetos.
+
+Estas modificaciones al libro de trabajo se van agregando progresivamente. 
+
+--
+
+.medium-par[Configurar la anchura de las columnas]
+
+```{r}
+## Se repite el proceso de crear WB, dar pestaña y cargar objeto:
+wb <- createWorkbook()  
+
+addWorksheet(wb,        
+      sheetName = "pestaña1", 
+      gridLines = TRUE)
+
+writeData(wb = wb,        
+      sheet = "pestaña1", 
+      x = base1)        
+
+## Nuevo comando:
+setColWidths(wb, 
+            sheet = 1, 
+          cols = c(1,2,3), ## Columnas a ensanchar 
+          widths = 10)      ## Anchura 
+
+```
+
+```{r echo=FALSE, results=FALSE}
+saveWorkbook(wb = wb,     ## Exportamos el libro
+          file = "output/nombre_archivo6.xlsx", 
+          overwrite = TRUE)
+```
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# El paquete `openxlsx`
+
+--
+
+Queda así:
+
+![](imagenes/anchura.PNG)
+
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# El paquete `openxlsx`
+
+--
+
+.medium-par[Inmovilizar paneles]
+
+```{r}
+freezePane(wb,                  ## Libro de trabajo
+           sheet= "pestaña1",   ## Pestaña en la que se aplica
+           firstRow = TRUE,     ## Inmobilizar fila superior
+           firstCol = TRUE)     ## Inmobilizar primera columna
+
+```
+
+
+```{r echo=FALSE, results=FALSE}
+saveWorkbook(wb = wb,     ## Exportamos el libro
+          file = "output/nombre_archivo7.xlsx", 
+          overwrite = TRUE)
+```
+
+--
+
+Queda así:
+
+![](imagenes/inm.PNG)
+
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# El paquete `openxlsx`
+
+--
+
+.medium-par[Aplicar colores y estilos]
+
+Se requieren dos pasos: crear el objeto "estilo" y aplicar el objeto "estilo" al libro de trabajo (wb)
+
+```{r}
+## Se crea estilo de celda azul, letra negras y ennegrecidas
+blue_bold <- createStyle(fontColour = "black",     ## Color letra
+                        bgFill = "skyblue3",      ## Color celda
+                        textDecoration = "bold")  ## Estilo de la letra
+
+```
+
+```{r}
+# Aplicar colores a nombres de columnas
+conditionalFormatting(wb, sheet = "pestaña1",   ## libro y pestaña
+                      cols = 1:2, ## columna
+                      rows = 1,   ## fila
+                      rule = "!=0", ## Condición
+                      style = blue_bold) ## Aplicar el estilo
+```
+
+--
+
+```{r echo=FALSE, results=FALSE}
+saveWorkbook(wb = wb,     ## Exportamos el libro
+          file = "output/nombre_archivo8.xlsx", 
+          overwrite = TRUE)
+```
+
+--
+
+![](imagenes/color_col.PNG)
+
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# El paquete `openxlsx`
+
+--
+
+.medium-par[Aplicar colores y estilos]
+
+También se pueden pintar las celdas si cumplen condición
+
+```{r}
+## Se crea estilo de celda azul, letra negras y ennegrecidas
+red <- createStyle(fontColour = "black",     ## Color letra
+                         bgFill = "red")           ## Color celda
+
+```
+
+--
+
+```{r}
+# Aplicar colores a nombres de columnas
+conditionalFormatting(wb, sheet = "pestaña1",   ## libro y pestaña
+                      cols = 1, ## solo columna 1
+                      rows = 2:11,   ## todas las filas, menos la primera
+                      rule = ">3", ## Condición mayor a 3
+                      style = red) ## Aplicar el estilo
+```
+
+--
+
+```{r echo=FALSE, results=FALSE}
+saveWorkbook(wb = wb,     ## Exportamos el libro
+          file = "output/nombre_archivo9.xlsx", 
+          overwrite = TRUE)
+```
+
+--
+
+![](imagenes/color_col_cond.PNG)
+
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# El paquete `openxlsx`
+
+--
+
+.medium-par[Porcentajes y separadores de miles]
+
+Pendiente. 
+
+
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Referencias y materiales de consulta
+
+--
+
+[Manual del paquete openxlsx](https://cran.r-project.org/web/packages/openxlsx/openxlsx.pdf).
+
+[Identificación de colores en una imagen](https://imagecolorpicker.com/).
+
+[Colores en R y códigos de colores](http://www.sthda.com/english/wiki/colors-in-r).
+
+[Estilo "INE" de esta presentación](https://github.com/piloto2/sesion_6).
+
+
+
+---
+
+class: center, middle
+
+.linea-superior[]
+.linea-inferior[]
+
+
+<img src="imagenes/logo_portada2.png" width="200" />
+
+
+## Capacitación en R
+
+## Exportar archivos desde R a Excel
+
+### (material complementario)
+
+### Diciembre 2020
