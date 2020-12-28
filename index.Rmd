@@ -286,8 +286,88 @@ background-position: 100% 0%
 
 .medium-par[Definir posición exacta de objetos en cada pestaña]
 
-Pendiente.
+Una gran ventaja de `openxlsx` es que en una misma pestaña de excel pueden agregarse dos o más data frames.
 
+--
+
+Esto se logra señalando la posición exacta de cada una:
+
+```{r}
+
+wb2 <- createWorkbook()  ## Se crea libro de trabajo 2 (wb2)
+
+addWorksheet(wb2,        ## Al objeto wb2 le damos una pestaña
+      sheetName = "pestaña1", 
+      gridLines = FALSE)
+
+writeData(wb = wb2,        ## En el libro wb2
+      sheet = "pestaña1", ## En su pestaña1
+      x = base1)          ## Cargamos el objeto base1
+
+## Por defecto, base1 se ubica en posición (1,1).
+
+```
+
+--
+
+Pero la posición de los objetos se puede determinar manualmente:
+
+--
+
+```{r}
+
+writeData(wb = wb2,       
+      sheet = "pestaña1",
+      startCol = 4,   ## Pegar nuevamente base 1 en col 4.
+      x = base1)    
+
+```
+
+
+```{r echo=FALSE}
+saveWorkbook(wb = wb2,     ## Exportamos el libro
+          file = "output/nombre_archivo12.xlsx", 
+          overwrite = TRUE)
+```
+
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# El paquete `openxlsx`
+
+--
+
+.medium-par[Queda algo así:]
+
+![](imagenes/base1x2.PNG)
+
+--
+
+Evidentemente, señalándolo correctamente se puede volver agregar la base1 (u otra data frame) en cualquier otra posición de la pestaña1. 
+
+--
+
+```{r}
+## Por ejemplo, pegar base1 nuevamente en la columna 8 y fila 20. 
+writeData(wb = wb2,       
+      sheet = "pestaña1",
+      startCol = 8, 
+      startRow = 20,
+      x = base1)    
+
+## Para ver archivo revisar output de repositorio: "nombre_archivo12.xlsx"
+
+```
+
+```{r echo=FALSE}
+saveWorkbook(wb = wb2,     ## Exportamos el libro
+          file = "output/nombre_archivo12.xlsx", 
+          overwrite = TRUE)
+```
 
 ---
 
@@ -481,9 +561,77 @@ background-position: 100% 0%
 
 --
 
-.medium-par[Porcentajes y separadores de miles]
+.medium-par[Aplicar porcentajes]
 
-Pendiente. 
+Lógica similar a la de los colores. Primero crear un estilo "porcentaje" y luego se aplica. 
+
+```{r}
+## Se crea estilo porcentaje (con un decimal)
+pct = createStyle(numFmt="0.0%")
+
+## Se aplica estilo porcentaje a las celdas deseadas
+addStyle(wb, 
+         sheet = 1,  
+         style=pct, 
+         cols=2, 
+         rows=3:4, 
+         gridExpand=TRUE)
+
+```
+
+```{r echo=FALSE, results=FALSE}
+saveWorkbook(wb = wb,     ## Exportamos el libro
+          file = "output/nombre_archivo10.xlsx", 
+          overwrite = TRUE)
+```
+
+--
+
+![](imagenes/porcentaje.PNG)
+
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# El paquete `openxlsx`
+
+--
+
+.medium-par[Hipervínculos]
+
+```{r}
+## Creamos nueva pestaña sin agregar objeto
+
+addWorksheet(wb,
+      sheetName = "pestaña2", 
+      gridLines = FALSE)
+
+## Creamos hipervinculo que nos lleve a la pestaña 2
+
+writeFormula(wb,        ## En libro WB
+             "pestaña1",  ## pestaña1 
+             startRow = 6, ## En la fila 6, aplica hipervínculo:
+             
+             x = makeHyperlinkString(sheet = "pestaña2", ## Lleva a pestaña2
+                                     row = 1,            ## Fila 1
+                                     col = 1,            ## Columna 1
+                                     text = "ACA LINK")) ## Texto del link
+
+```
+
+```{r echo=FALSE, results=FALSE}
+saveWorkbook(wb = wb,     ## Exportamos el libro
+          file = "output/nombre_archivo11.xlsx", 
+          overwrite = TRUE)
+```
+
+--
+
+![](imagenes/hiper1.PNG)
+
 
 
 
