@@ -226,7 +226,7 @@ En base a los cuatro argumentos de `write_xlsx`, ¿cómo podemos crear un archiv
 
 --
 
-No se puede. Hay que recurrir a otras funciones, como `openxlsx`, que pemitirán:
+No se puede. Hay que recurrir a funciones de otros paquetes, como `openxlsx`, que pemitirán:
 
 + Definir formato de celdas (color, color condicional, %, carácter, etc.)
 + Pegar más de una base de datos por pestañas
